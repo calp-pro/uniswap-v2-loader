@@ -5,7 +5,7 @@ const { parseAbiItem, createPublicClient, http } = require('viem')
 const { mainnet } = require('viem/chains')
 const workers = os.cpus().length - 1
 const missed = Array(workers).fill(null).map(() => [])
-const key = process.env.KEY || process.argv[2] || 'FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu'
+const key = process.env.KEY || 'FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu'
 const factory = '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f'
 const client = createPublicClient({
     chain: mainnet,
