@@ -1,0 +1,30 @@
+{
+  "name": "uniswap-v2",
+  "version": "1.0.0",
+  "description": "Uniswap v2 protocol loader",
+  "keywords": [
+    "uniswap-v2",
+    "protocol",
+    "loader",
+    "crypto",
+    "ethereum"
+  ],
+  "homepage": "https://github.com/calp-pro/uniswap-v2#readme",
+  "bugs": {
+    "url": "https://github.com/calp-pro/uniswap-v2/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/calp-pro/uniswap-v2.git"
+  },
+  "license": "MIT",
+  "author": "Vladimir Spirin (spirin.vladimir@gmail.com)",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test.js"
+  },
+  "dependencies": {
+    "viem": "^2.46.2"
+  }
+}
