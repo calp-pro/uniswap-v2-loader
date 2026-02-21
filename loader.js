@@ -9,12 +9,13 @@ const POOL = {
     TOKEN1: 3
 }
 
-async function load(client, missed, filename, factory, key) {
+async function load(params) {
+    const {client, missed, filename, factory, key, chunk_size} = params
     let loaded = 0
-    const chunk_size = 50
+    const retry_missed = []
 
-    for (let i = 0; i < missed.length; i += chunk_size) {
-        const chunk = missed.slice(i, i + chunk_size)
+    for (let ic = 0; ic < missed.length; ic += chunk_size) {
+        const chunk = missed.slice(ic, ic + chunk_size)
         
         try {
             const pool_addresses = await client.multicall({
@@ -30,10 +31,11 @@ async function load(client, missed, filename, factory, key) {
             const token_calls = []
 
             pool_addresses.forEach((result, i) => {
+                const id = chunk[i]
                 if (result.status == 'success') {
                     const pool_address = result.result
                     pools_ok.push({
-                        id: chunk[i],
+                        id,
                         address: pool_address
                     })                    
                     token_calls.push({
@@ -47,7 +49,7 @@ async function load(client, missed, filename, factory, key) {
                         functionName: 'token1'
                     })
                 } else {
-                    console.error('Failed loading pair', chunk[i], result)
+                    retry_missed.push(id)
                 }
             })
 
@@ -67,29 +69,33 @@ async function load(client, missed, filename, factory, key) {
                     pool[POOL.TOKEN0] = token0_result.result.toLowerCase()
                     pool[POOL.TOKEN1] = token1_result.result.toLowerCase()
                     
-                    fs.appendFileSync(filename, pool.join(',') + '\n')
+                    console.log(pool.join(','))
+                } else {
+                    retry_missed.push(pools_ok[j].id)
                 }
             }
-
         } catch (error) {
             console.error(error.message)
         }
     }
+    
+    if (retry_missed.length) {
+        params.missed = retry_missed
+        return await load(params)
+    }
 }
 
-const job_index = +process.argv[2]
+const jobs_data_filename = process.argv[2]
+const job_index = +process.argv[3]
 
 if (isNaN(job_index)) console.error('Required pass an index of job via argument') || process.exit(1)
 
-const jobs_data = JSON.parse(fs.readFileSync('jobs_data.json', 'utf8'))
-const missed = jobs_data.missed[job_index]
-const filename = jobs_data.filename
-const factory = jobs_data.factory
-const key = jobs_data.key
+const jobs_data = JSON.parse(fs.readFileSync(jobs_data_filename, 'utf8'))
+jobs_data.missed = jobs_data.missed[job_index]
 
 const client = createPublicClient({
     chain: mainnet,
-    transport: http(`https://eth-mainnet.g.alchemy.com/v2/${key}`)
+    transport: http(`https://eth-mainnet.g.alchemy.com/v2/${jobs_data.key}`)
 })
 
-load(client, missed, filename, factory, key)
+load({client, ...jobs_data, chunk_size: 50})

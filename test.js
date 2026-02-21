@@ -1,10 +1,12 @@
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
+const fs = require('fs')
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
 const uniswap_v2_loader = require('./index')
 
 test('Exist USDC/USDP pair', () =>
-    uniswap_v2_loader.all().then(pairs => {
-        assert.ok(pairs.length > 0)
+    uniswap_v2_loader.all({to: 14})
+    .then(pairs => {
+        assert.equal(pairs.length, 14)
         const i = pairs.findIndex(({id}) => id == 1)
         assert.ok(i != -1)
         if (i != -1) {
@@ -15,3 +17,15 @@ test('Exist USDC/USDP pair', () =>
         }
     })
 )
+
+test('Load first two pairs to file', () => {
+    const filename = Date.now() + '.csv'
+    return uniswap_v2_loader.all({to: 2, filename})
+    .then(() => {
+        const lines = fs.readFileSync(filename).toString().trim().split('\n')
+        assert.equal(lines.length, 2)
+    })
+    .finally(() =>
+        fs.unlinkSync(filename)
+    )
+})
