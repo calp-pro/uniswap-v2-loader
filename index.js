@@ -31,7 +31,7 @@ const client = createPublicClient({
 })
 
 const load = params => {
-    const {filename = default_filename, to, from = 0, chunk_size = 50} = params
+    const {filename = default_filename, to, from = 0, chunk_size = 50, progress, count} = params
     const pairs = params.pairs || fs.existsSync(filename)
         ? fs.readFileSync(filename).toString().trim().split('\n')
             .reduce((pairs, line) => {
@@ -47,7 +47,8 @@ const load = params => {
             }, [])
         : []
 
-    if (pairs.length > to) return Promise.resolve(pairs.slice(0, to))
+    if (count) return pairs.length
+    if (to && pairs.length > to) return Promise.resolve(pairs.slice(0, to))
 
     return (to
         ? Promise.resolve(to)
@@ -69,6 +70,9 @@ const load = params => {
             if (missed[rr].length % chunk_size == 0)
                 rr = (rr + 1) % workers
         }
+        
+        var progress_i = 0
+        const progress_end = allPairsLength - start_loading_from
         
         const jobs_data_filename = `jobs_data_${Date.now()}.json`
         fs.writeFileSync(jobs_data_filename, JSON.stringify({
@@ -98,6 +102,10 @@ const load = params => {
                             token1: a[3]
                         }
                     })
+                    if (progress) {
+                        progress_i += lines.length
+                        progress(progress_i, progress_end)
+                    }
                     if (filename) {
                         var pair
                         while (pair = pairs[next_pair_order]) {
@@ -119,6 +127,9 @@ const load = params => {
 
 module.exports.all = (params = {}) =>
     load(params)
+    
+module.exports.count = () =>
+    load({count: true})
 
 module.exports.onupdate = function onupdate(callback, params = {}) {
     var subscribe = true, timeout
