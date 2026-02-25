@@ -1,97 +1,102 @@
 const { parseAbiItem, createPublicClient, http } = require('viem')
 const { mainnet } = require('viem/chains')
 
-const POOL = {
-    ID: 0,
-    ADDRESS: 1,
-    TOKEN0: 2,
-    TOKEN1: 3
-}
+const get_pairs_addresses = (client, factory, ids) => ids.length == 0
+    ? Promise.resolve([])
+    : client.multicall({
+        contracts: ids.map(id => ({
+            address: factory,
+            abi: [parseAbiItem('function allPairs(uint256) view returns (address)')],
+            functionName: 'allPairs',
+            args: [BigInt(id)]
+        }))
+    }).then(responds => {
+        const addresses = []
+        const failed_ids = []
+        for (var i = 0; i < responds.length; i++)
+            responds[i].status == 'success'
+                ? addresses.push(responds[i].result)
+                : failed_ids.push(i)
 
-async function load(params) {
-    const {client, missed, filename, factory, key, chunk_size} = params
-    let loaded = 0
-    const retry_missed = []
-
-    for (let ic = 0; ic < missed.length; ic += chunk_size) {
-        const chunk = missed.slice(ic, ic + chunk_size)
-        
-        try {
-            const pool_addresses = await client.multicall({
-                contracts: chunk.map(i => ({
-                    address: factory,
-                    abi: [parseAbiItem('function allPairs(uint256) view returns (address)')],
-                    functionName: 'allPairs',
-                    args: [BigInt(i)]
-                }))
-            })
-
-            const pools_ok = []
-            const token_calls = []
-
-            pool_addresses.forEach((result, i) => {
-                const id = chunk[i]
-                if (result.status == 'success') {
-                    const pool_address = result.result
-                    pools_ok.push({
-                        id,
-                        address: pool_address
-                    })                    
-                    token_calls.push({
-                        address: pool_address,
-                        abi: [parseAbiItem('function token0() view returns (address)')],
-                        functionName: 'token0'
-                    })
-                    token_calls.push({
-                        address: pool_address,
-                        abi: [parseAbiItem('function token1() view returns (address)')],
-                        functionName: 'token1'
-                    })
-                } else {
-                    retry_missed.push(id)
-                }
-            })
-
-            if (token_calls.length === 0) continue
-
-            const token_results = await client.multicall({
-                contracts: token_calls
-            })
-
-            for (let j = 0, pool = []; j < pools_ok.length; j++) {
-                const token0_result = token_results[j * 2]
-                const token1_result = token_results[j * 2 + 1]
-
-                if (token0_result.status == 'success' && token1_result.status == 'success') {
-                    pool[POOL.ID] = pools_ok[j].id
-                    pool[POOL.ADDRESS] = pools_ok[j].address.toLowerCase()
-                    pool[POOL.TOKEN0] = token0_result.result.toLowerCase()
-                    pool[POOL.TOKEN1] = token1_result.result.toLowerCase()
-
-                    process.send(pool)
-                } else {
-                    retry_missed.push(pools_ok[j].id)
-                }
-            }
-        } catch (_) {
-            chunk.forEach(id => {
-                if (retry_missed.includes(id)) return
-                retry_missed.push(id)
-            })
-        }
-    }
-    
-    if (retry_missed.length) {
-        params.missed = retry_missed
-        return await load(params)
-    }
-}
-
-process.on('message', jobs_data => {
-    const client = createPublicClient({
-        chain: mainnet,
-        transport: http(`https://eth-mainnet.g.alchemy.com/v2/${jobs_data.key}`)
+        return get_pairs_addresses(client, factory, failed_ids).then(retried_addresses =>
+            [...addresses, ...retried_addresses]
+        )
     })
 
-    load({client, ...jobs_data}).then(() => process.exit())
-})
+const get_tokens = (client, addresses) => addresses.length == 0
+    ? Promise.resolve({})
+    : client.multicall({
+        contracts: addresses.flatMap(address => [
+            {
+                address,
+                abi: [parseAbiItem('function token0() view returns (address)')],
+                functionName: 'token0'
+            },
+            {
+                address,
+                abi: [parseAbiItem('function token1() view returns (address)')],
+                functionName: 'token1'
+            }
+        ])
+    }).then(responds => {
+        const tokens = {}
+        const failed_addresses = []
+
+        for (var i = 0; i < addresses.length; i++) {
+            const token0_respond = responds[i * 2]
+            const token1_respond = responds[i * 2 + 1]
+
+            if (
+                token0_respond.status == 'success' &&
+                token1_respond.status == 'success'
+            )
+                tokens[addresses[i]] = [token0_respond.result, token1_respond.result]
+            else
+                failed_addresses.push(addresses[i])
+        }
+    
+        return get_tokens(client, failed_addresses).then(retried_tokens => ({
+            ...tokens,
+            ...retried_tokens
+        }))
+    })
+
+const main = ({ids, factory, key, multicall_size}, onpair) => {
+    const client = createPublicClient({
+        chain: mainnet,
+        transport: http(`https://eth-mainnet.g.alchemy.com/v2/${key}`)
+    })
+
+    const chunks = []
+    for (let i = 0; i < ids.length; i += multicall_size)
+        chunks.push(ids.slice(i, i + multicall_size))
+
+    return chunks.reduce((p, ids, ic) =>
+        p.then(() =>
+            get_pairs_addresses(client, factory, ids).then(pairs_addresses =>
+                get_tokens(client, pairs_addresses).then(tokens =>
+                    ids.forEach((id, i) =>
+                        onpair({
+                            id,
+                            pair: pairs_addresses[i],
+                            token0: tokens[pairs_addresses[i]][0],
+                            token1: tokens[pairs_addresses[i]][1]
+                        })
+                    )
+                )
+            )
+        ),
+        Promise.resolve()
+    )
+}
+
+
+if (require.main != module)
+    module.exports = main
+else
+    process.on(
+        'message',
+        message =>
+            main(message, pair => process.send(pair))
+            .then(() => process.exit())
+    )

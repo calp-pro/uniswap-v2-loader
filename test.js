@@ -52,4 +52,3 @@ test('Each line at CSV cache file should be orderd by pair id (factory id)', () 
     for (var i = 0; i < lines.length; i++)
         assert.equal(i, +lines[i].split(',').shift())
 })
-
