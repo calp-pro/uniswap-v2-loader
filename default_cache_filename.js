@@ -4,7 +4,7 @@ const os = require('os')
 const home = os.homedir()
 const pkg = require('./package.json')
 
-module.exports = path.join(
+module.exports = (factory) => path.join(
   ...(process.platform === 'win32'
       ? (env.LOCALAPPDATA || env.APPDATA)
         ? [env.LOCALAPPDATA || env.APPDATA]
@@ -15,5 +15,5 @@ module.exports = path.join(
           ? [env.XDG_CACHE_HOME]
           : [home, '.cache']
   ),
-  pkg.name + '_pairs.csv'
+  `${pkg.name}_${factory.toLowerCase()}.csv`
 )

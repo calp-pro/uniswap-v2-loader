@@ -13,7 +13,7 @@ const load = (params = {}) => {
     var {
         key = debug_key,
         factory = uniswap_v2_factory,
-        filename = default_cache_filename,
+        filename,
         multicall_size = 50,
         from = 0,
         to,
@@ -21,6 +21,7 @@ const load = (params = {}) => {
         workers = max_workers,
         pairs,
     } = params
+    filename ??= default_cache_filename(factory)
     const client = createPublicClient({
         chain: mainnet,
         transport: http('https://eth-mainnet.g.alchemy.com/v2/' + key)
