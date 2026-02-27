@@ -106,12 +106,6 @@ const load = (params = {}) => {
     })
 }
 
-
-module.exports.clear_cache = () => {
-    if (fs.existsSync(default_cache_filename))
-    fs.unlinkSync(default_cache_filename)
-}
-
 module.exports.load = (params = {}) =>
     load(params)
 

@@ -1,6 +1,5 @@
 # uniswap-v2-loader
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 High-speed Uniswap v2 pair loader using viem multicall and parallel CPU processing.
 
 ## Configuration
@@ -35,9 +34,6 @@ uniswap-v2-loader
     - `params`: (Object) Same as `load()` plus:
         - `update_timeout`: (number) Polling interval in ms (default 5000).
 - **Returns**: `Function` An unsubscribe function to stop polling.
-
-### `clear_cache()`
-- **Description**: Clears the default cache file.
 
 ### Pair Object
 The pair object contains the following fields:

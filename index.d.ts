@@ -46,11 +46,6 @@ export interface load_params {
 export function load(params?: load_params): Promise<pair[]>
 
 /**
- * Clears the default cache file.
- */
-export function clear_cache(): void
-
-/**
  * Subscribes to new pairs being added to the factory.
  * @param callback Called whenever new pairs are loaded.
  * @param params Loading configuration.

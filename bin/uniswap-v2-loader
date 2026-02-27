@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { load, count, clear_cache } = require('../index')
+const { load } = require('../index')
 const rl = require('readline')
 
 const progress = (c, t) => {
@@ -11,9 +11,43 @@ const progress = (c, t) => {
 	process.stdout.write(`Loaded: ${cur} / ${t} (${pct}%)`)
 }
 
-if (process.argv[2] == '-c' || process.argv[2] == '--count')
-	console.log(count())
-else if (process.argv[2] == '--clear')
-	clear_cache()
-else 
-	load({progress})
+const options = [
+    'key',
+    'factory',
+    'filename',
+    'multicall_size',
+    'from',
+    'to',
+    'workers',
+    'update_timeout'
+]
+
+const params = { progress }
+var i = 2
+while (arg = process.argv[i]) {
+    if (arg == '-h' || arg == '--help') {
+        console.log('Options:\n', options.map(option => `\t--${option}`).join('\n'))
+        process.exit(0)
+    }
+    if (!arg.startsWith('--')) {
+        console.log(`Option should start with "--", not: "${arg}".`)
+        process.exit(22)
+    }
+    var [option, value] = arg.slice(2).split('=')
+    if (!options.includes(option)) {
+        console.log(`Unsupported option: "${option}`)
+        process.exit(22)
+    }
+    if (!value) {
+        i++
+        value = process.argv[i]
+        if (!value || value.startsWith('--')) {
+            console.log(`Missed value for an option "${option}".`)
+            process.exit(22)
+        }
+    }
+    params[option] = value
+    i++
+}
+
+load(params)

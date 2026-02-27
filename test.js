@@ -1,10 +1,14 @@
 const fs = require('fs')
 const { describe, before, it } = require('node:test')
 const assert = require('node:assert/strict')
-const {clear_cache, load, onupdate} = require('./index')
+const {load, onupdate} = require('./index')
+const default_cache_filename = require('./default_cache_filename')
 
 describe('Uniswap V2', () => {
-    before(() => clear_cache())
+    before(() => {
+        if (fs.existsSync(default_cache_filename))
+            fs.unlinkSync(default_cache_filename)
+    })
     
     it('Exist USDC/USDP pair', () =>
         load({to: 2})

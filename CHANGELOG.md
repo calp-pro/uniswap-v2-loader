@@ -1,3 +1,9 @@
+## [4.0.0] - 2026-02-27
+- Remove clear_cache.
+- Full CLI support.
+- Removed "typescript" from devDependencies
+- CHANGELOG.md and test.js moved to .npmignore as not part of a package 
+
 ## [3.0.0] - 2026-02-27
 - Added TypeScript type definitions (`index.d.ts`).
 - Added JSDoc documentation for a better developer experience.
