@@ -1,6 +1,6 @@
 {
   "name": "uniswap-v2-loader",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Uniswap v2 protocol loader",
   "keywords": [
     "uniswap-v2",
