@@ -10,7 +10,6 @@ const get_pairs_addresses = (key, factory, ids) => ids.length == 0
             params: [{ to: factory, data: '0x1e3dd18b' + id.toString(16).padStart(64, '0') }, 'latest']
         })))
     }).then(_ => _.json()).then(responds => {
-        if (!Array.isArray(responds)) responds = [responds]
         responds.sort((a, b) => a.id - b.id)
         const addresses = []
         const failed_ids = []
@@ -44,7 +43,6 @@ const get_tokens = (key, addresses) => addresses.length == 0
             }
         ]))
     }).then(_ => _.json()).then(responds => {
-        if (!Array.isArray(responds)) responds = [responds]
         responds.sort((a, b) => a.id - b.id)
         const tokens = {}
         const failed_addresses = []
