@@ -6,7 +6,9 @@ const home = os.homedir()
 const pkg = require('./package.json')
 
 module.exports = (factory) => path.join(
-  ...(process.platform === 'win32'
+  ...(env.GITHUB_ACTIONS
+      ? ['.']
+      : process.platform === 'win32'
       ? env.LOCALAPPDATA || env.APPDATA
         ? [env.LOCALAPPDATA || env.APPDATA]
         : [home, 'AppData', 'Local']
