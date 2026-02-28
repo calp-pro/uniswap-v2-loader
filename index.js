@@ -2,8 +2,6 @@ const cluster = require('cluster')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const { parseAbiItem, createPublicClient, http } = require('viem')
-const { mainnet } = require('viem/chains')
 const default_cache_filename = require('./default_cache_filename')
 const max_workers = os.cpus().length - 1
 const debug_key = process.env.KEY || 'FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu'
@@ -22,10 +20,6 @@ const load = (params = {}) => {
         pairs,
     } = params
     filename ??= default_cache_filename(factory)
-    const client = createPublicClient({
-        chain: mainnet,
-        transport: http('https://eth-mainnet.g.alchemy.com/v2/' + key)
-    })
 
     pairs ??= fs.existsSync(filename)
         ? fs.readFileSync(filename).toString().trim().split('\n')
@@ -47,12 +41,18 @@ const load = (params = {}) => {
 
     return (to
         ? Promise.resolve(to)
-        : client.readContract({
-            address: factory,
-            abi: [parseAbiItem('function allPairsLength() view returns (uint256)')],
-            functionName: 'allPairsLength'
-        }).then(_ => Number(_))
+        : fetch('https://eth-mainnet.g.alchemy.com/v2/' + key, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'eth_call',
+                params: [{ to: factory, data: '0x574f2ba3' }, 'latest']
+            })
+        }).then(_ => _.json()).then(_ => Number(_.result))
     ).then(all_pairs_length => {
+        console.log(`all_pairs_length`, all_pairs_length)
         const start_loading_from = pairs.length
             ? Math.max(from || 0, pairs[pairs.length - 1].id + 1)
             : 0
