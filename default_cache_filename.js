@@ -5,7 +5,13 @@ const os = require('os')
 const home = os.homedir()
 const pkg = require('./package.json')
 
-const is_dir = _ => _ && fs.existsSync(_) && fs.statSync(_).isDirectory()
+const is_dir = _ => {
+  try {
+    return fs.statSync(_).isDirectory() && fs.accessSync(_, fs.constants.W_OK) === undefined
+  } catch (e) {
+    return false
+  }
+}
 
 module.exports = (factory) => path.join(
   ...(process.platform === 'win32'
