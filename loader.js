@@ -1,6 +1,3 @@
-const { parseAbiItem, createPublicClient, http } = require('viem')
-const { mainnet } = require('viem/chains')
-
 const get_pairs_addresses = (key, factory, ids) => ids.length == 0
     ? Promise.resolve([])
     : fetch('https://eth-mainnet.g.alchemy.com/v2/' + key, {
@@ -27,22 +24,28 @@ const get_pairs_addresses = (key, factory, ids) => ids.length == 0
             : get_pairs_addresses(key, factory, failed_ids).then(retried => [...addresses, ...retried])
     })
 
-const get_tokens = (client, addresses) => addresses.length == 0
+const get_tokens = (key, addresses) => addresses.length == 0
     ? Promise.resolve({})
-    : client.multicall({
-        contracts: addresses.flatMap(address => [
+    : fetch('https://eth-mainnet.g.alchemy.com/v2/' + key, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addresses.flatMap((address, i) => [
             {
-                address,
-                abi: [parseAbiItem('function token0() view returns (address)')],
-                functionName: 'token0'
+                jsonrpc: '2.0',
+                id: i * 2,
+                method: 'eth_call',
+                params: [{ to: address, data: '0x0dfe1681' }, 'latest']
             },
             {
-                address,
-                abi: [parseAbiItem('function token1() view returns (address)')],
-                functionName: 'token1'
+                jsonrpc: '2.0',
+                id: i * 2 + 1,
+                method: 'eth_call',
+                params: [{ to: address, data: '0xd21220a7' }, 'latest']
             }
-        ])
-    }).then(responds => {
+        ]))
+    }).then(_ => _.json()).then(responds => {
+        if (!Array.isArray(responds)) responds = [responds]
+        responds.sort((a, b) => a.id - b.id)
         const tokens = {}
         const failed_addresses = []
 
@@ -50,27 +53,21 @@ const get_tokens = (client, addresses) => addresses.length == 0
             const token0_respond = responds[i * 2]
             const token1_respond = responds[i * 2 + 1]
 
-            if (
-                token0_respond.status == 'success' &&
-                token1_respond.status == 'success'
-            )
-                tokens[addresses[i]] = [token0_respond.result, token1_respond.result]
+            if (token0_respond.result && token1_respond.result)
+                tokens[addresses[i]] = [
+                    '0x' + token0_respond.result.slice(-40),
+                    '0x' + token1_respond.result.slice(-40)
+                ]
             else
                 failed_addresses.push(addresses[i])
         }
-    
-        return get_tokens(client, failed_addresses).then(retried_tokens => ({
-            ...tokens,
-            ...retried_tokens
-        }))
+
+        return failed_addresses.length == 0
+            ? tokens
+            : get_tokens(key, failed_addresses).then(retried => ({ ...tokens, ...retried }))
     })
 
 const main = ({ids, factory, key, multicall_size}, onpair) => {
-    const client = createPublicClient({
-        chain: mainnet,
-        transport: http(`https://eth-mainnet.g.alchemy.com/v2/${key}`)
-    })
-
     const chunks = []
     for (let i = 0; i < ids.length; i += multicall_size)
         chunks.push(ids.slice(i, i + multicall_size))
@@ -78,7 +75,7 @@ const main = ({ids, factory, key, multicall_size}, onpair) => {
     return chunks.reduce((p, ids, ic) =>
         p.then(() =>
             get_pairs_addresses(key, factory, ids).then(pairs_addresses =>
-                get_tokens(client, pairs_addresses).then(tokens =>
+                get_tokens(key, pairs_addresses).then(tokens =>
                     ids.forEach((id, i) =>
                         onpair({
                             id,

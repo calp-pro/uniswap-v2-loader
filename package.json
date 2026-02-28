@@ -33,8 +33,5 @@
   },
   "bin": {
     "uniswap-v2-loader": "./bin/uniswap-v2-loader"
-  },
-  "dependencies": {
-    "viem": "^2.46.2"
   }
 }
