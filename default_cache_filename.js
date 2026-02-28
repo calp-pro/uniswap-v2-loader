@@ -13,9 +13,9 @@ module.exports = (factory) => path.join(
       : process.platform === 'darwin'
         ? [home, 'Library', 'Caches']
         : env.XDG_CACHE_HOME && path.isAbsolute(env.XDG_CACHE_HOME) && fs.existsSync(env.XDG_CACHE_HOME)
-          ? console.log(1) || [env.XDG_CACHE_HOME]
-          : console.log(2) || fs.existsSync(path.join(home, '.cache'))
-            ? console.log(3) || [home, '.cache']
-            : console.log(4) || [os.tmpdir()],
+          ? [env.XDG_CACHE_HOME]
+          : fs.existsSync(path.join(home, '.cache'))
+            ? [home, '.cache']
+            : [fs.existsSync(os.tmpdir()) ? os.tmpdir() : home],
   `${pkg.name}_${factory.toLowerCase()}.csv`
 )
