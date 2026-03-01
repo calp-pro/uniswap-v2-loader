@@ -27,9 +27,17 @@
   "author": "Vladimir Spirin (spirin.vladimir@gmail.com)",
   "type": "commonjs",
   "main": "index.js",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.js",
+      "types": "./index.d.ts"
+    }
+  },
   "types": "index.d.ts",
   "scripts": {
-    "test": "node --test test.js"
+    "test": "node --test test.js",
+    "test-esm": "node --test test-esm.mjs"
   },
   "bin": {
     "uniswap-v2-loader": "./bin/uniswap-v2-loader"
