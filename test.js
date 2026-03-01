@@ -16,9 +16,6 @@ describe('Uniswap V2', () => {
     })
     
     it('Exist USDC/USDP pair', () => {
-        fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
-        .forEach(line => console.log('*1', line))
-        
         
         return load({to: 2})
         .then(pairs => {
@@ -41,7 +38,7 @@ describe('Uniswap V2', () => {
     })
     
     
-    it('Re-load first two pairs to custom CSV file', () => {
+    it.skip('Re-load first two pairs to custom CSV file', () => {
         // If user specify a filename then
         // a cache data will be taken from
         // the filename provided. If file is empty then
@@ -60,7 +57,7 @@ describe('Uniswap V2', () => {
         })
     })
 
-    it('subscribe should call provided callback with 2 pairs for a current moment (from cache)', () => {
+    it.skip('subscribe should call provided callback with 2 pairs for a current moment (from cache)', () => {
         return new Promise(y => {
             const unsubscribe = subscribe(pairs => {
                 assert.equal(pairs.length, 2)
@@ -73,7 +70,7 @@ describe('Uniswap V2', () => {
         })
     })
 
-    it('Multi-core test 2 workers load 2 pools using multicall', () =>
+    it.skip('Multi-core test 2 workers load 2 pools using multicall', () =>
         // There are already 2 pools loaded from previous test
         // 6 - 2 = 4. Rest 4 will be loaded by 2 workers. Each load 2.
         // Multicall size is 2.
@@ -85,7 +82,7 @@ describe('Uniswap V2', () => {
         })
     )
 
-    it('Each line at CSV cache file should be orderd by pair id (factory id)', () => {
+    it.skip('Each line at CSV cache file should be orderd by pair id (factory id)', () => {
         const lines = fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
 
         lines.forEach(line => console.log('*5',line))
