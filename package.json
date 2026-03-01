@@ -27,11 +27,13 @@
   "author": "Vladimir Spirin (spirin.vladimir@gmail.com)",
   "type": "commonjs",
   "main": "index.js",
+  "module": "index.mjs",
   "exports": {
     ".": {
-      "import": "./index.mjs",
+      "types": "./index.d.ts",
       "require": "./index.js",
-      "types": "./index.d.ts"
+      "import": "./index.mjs",
+      "default": "./index.js"
     }
   },
   "types": "index.d.ts",
