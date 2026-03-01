@@ -15,8 +15,12 @@ describe('Uniswap V2', () => {
             fs.unlinkSync(uniswap_v2_cache_filename)
     })
     
-    it('Exist USDC/USDP pair', () =>
-        load({to: 2})
+    it('Exist USDC/USDP pair', () => {
+        fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
+        .forEach(line => console.log('*1', line))
+        
+        
+        return load({to: 2})
         .then(pairs => {
             assert.equal(pairs.length, 2)
             const i = pairs.findIndex(({id}) => id == 1)
@@ -34,7 +38,7 @@ describe('Uniswap V2', () => {
             fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
             .forEach(line => console.log('*1', line))
         })
-    )
+    })
     
     
     it('Re-load first two pairs to custom CSV file', () => {
