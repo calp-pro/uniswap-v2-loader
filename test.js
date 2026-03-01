@@ -7,6 +7,9 @@ const default_cache_filename = require('./default_cache_filename')
 describe('Uniswap V2', () => {
     const uniswap_v2_factory = '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f'
     const uniswap_v2_cache_filename = default_cache_filename(uniswap_v2_factory)
+    
+    console.log('uniswap_v2_cache_filename', uniswap_v2_cache_filename)
+    
     before(() => {
         if (fs.existsSync(uniswap_v2_cache_filename))
             fs.unlinkSync(uniswap_v2_cache_filename)
@@ -27,6 +30,9 @@ describe('Uniswap V2', () => {
                 assert.equal(token0, '0x8e870d67f660d95d5be530380d0ec0bd388289e1')
                 assert.equal(token1, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48')
             }
+            
+            fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
+            .forEach(line => console.log('*1', line))
         })
     )
     
@@ -44,6 +50,9 @@ describe('Uniswap V2', () => {
         })
         .finally(() => {
             fs.unlinkSync(filename)
+            
+            fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
+            .forEach(line => console.log('*2', line))
         })
     })
 
@@ -52,6 +61,9 @@ describe('Uniswap V2', () => {
             const unsubscribe = subscribe(pairs => {
                 assert.equal(pairs.length, 2)
                 unsubscribe()
+
+                fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
+                .forEach(line => console.log('*3', line))
                 y()
             }, {to: 2})
         })
@@ -64,12 +76,16 @@ describe('Uniswap V2', () => {
         load({to: 6, multicall_size: 2, workers: 2 })
         .then(pairs => {
             assert.equal(pairs.length, 6)
+            fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
+            .forEach(line => console.log('*4',line))
         })
     )
 
     it('Each line at CSV cache file should be orderd by pair id (factory id)', () => {
         const lines = fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
 
+        lines.forEach(line => console.log('*5',line))
+        
         for (var i = 0; i < lines.length; i++)
             assert.equal(i, +lines[i].split(',').shift())
     })
