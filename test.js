@@ -82,7 +82,7 @@ describe('Uniswap V2', () => {
         })
     )
 
-    it.skip('Each line at CSV cache file should be orderd by pair id (factory id)', () => {
+    it('Each line at CSV cache file should be orderd by pair id (factory id)', () => {
         const lines = fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
 
         lines.forEach(line => console.log('*5',line))
