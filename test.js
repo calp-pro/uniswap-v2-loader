@@ -38,7 +38,7 @@ describe('Uniswap V2', () => {
     })
     
     
-    it.skip('Re-load first two pairs to custom CSV file', () => {
+    it('Re-load first two pairs to custom CSV file', () => {
         // If user specify a filename then
         // a cache data will be taken from
         // the filename provided. If file is empty then
@@ -57,7 +57,7 @@ describe('Uniswap V2', () => {
         })
     })
 
-    it.skip('subscribe should call provided callback with 2 pairs for a current moment (from cache)', () => {
+    it('subscribe should call provided callback with 2 pairs for a current moment (from cache)', () => {
         return new Promise(y => {
             const unsubscribe = subscribe(pairs => {
                 assert.equal(pairs.length, 2)
@@ -70,7 +70,7 @@ describe('Uniswap V2', () => {
         })
     })
 
-    it.skip('Multi-core test 2 workers load 2 pools using multicall', () =>
+    it('Multi-core test 2 workers load 2 pools using multicall', () =>
         // There are already 2 pools loaded from previous test
         // 6 - 2 = 4. Rest 4 will be loaded by 2 workers. Each load 2.
         // Multicall size is 2.
