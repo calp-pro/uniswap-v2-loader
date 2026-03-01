@@ -42,9 +42,9 @@ describe('Uniswap V2', () => {
             const lines = fs.readFileSync(filename).toString().trim().split('\n')
             assert.equal(lines.length, 2)
         })
-        .finally(() =>
+        .finally(() => {
             fs.unlinkSync(filename)
-        )
+        })
     })
 
     it('subscribe should call provided callback with 2 pairs for a current moment (from cache)', () => {
@@ -70,7 +70,7 @@ describe('Uniswap V2', () => {
     it('Each line at CSV cache file should be orderd by pair id (factory id)', () => {
         const lines = fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
 
-        for (var i = 0; i < lines.length; i++)        
+        for (var i = 0; i < lines.length; i++)
             assert.equal(i, +lines[i].split(',').shift())
     })
 })
