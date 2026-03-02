@@ -9,7 +9,16 @@ const get_pairs_addresses = (key, factory, ids) => ids.length == 0
             method: 'eth_call',
             params: [{ to: factory, data: '0x1e3dd18b' + id.toString(16).padStart(64, '0') }, 'latest']
         })))
-    }).then(_ => _.json()).then(responds => {
+    }).then(
+        _ => {
+            if (_.ok) return _.json()
+            throw 'respond not ok'
+        },
+        _ => {
+            throw 'failed fetch'
+        }
+    )    
+    .then(responds => {
         responds.sort((a, b) => a.id - b.id)
         const addresses = []
         const failed_ids = []
@@ -22,6 +31,7 @@ const get_pairs_addresses = (key, factory, ids) => ids.length == 0
             ? addresses
             : get_pairs_addresses(key, factory, failed_ids).then(retried => [...addresses, ...retried])
     })
+    .catch(() => get_pairs_addresses(key, factory, ids))
 
 const get_tokens = (key, addresses) => addresses.length == 0
     ? Promise.resolve({})
@@ -42,7 +52,15 @@ const get_tokens = (key, addresses) => addresses.length == 0
                 params: [{ to: address, data: '0xd21220a7' }, 'latest']
             }
         ]))
-    }).then(_ => _.json()).then(responds => {
+    }).then(
+        _ => {
+            if (_.ok) return _.json()
+            throw 'respond not ok'
+        },
+        _ => {
+            throw 'fetch failed'
+        }
+    }).then(responds => {
         responds.sort((a, b) => a.id - b.id)
         const tokens = {}
         const failed_addresses = []
@@ -64,6 +82,7 @@ const get_tokens = (key, addresses) => addresses.length == 0
             ? tokens
             : get_tokens(key, failed_addresses).then(retried => ({ ...tokens, ...retried }))
     })
+    .catch(() => get_tokens(key, addresses))
 
 const main = ({ids, factory, key, multicall_size}, onpair) => {
     const chunks = []
