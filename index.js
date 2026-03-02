@@ -79,6 +79,7 @@ const load = (params = {}) => {
             for (var i = start_loading_from; i < all_pairs_length; i++)
                 ids.push(i)
             return require('./loader')({ ids, factory, key, multicall_size }, onpair)
+            .then(() => pairs)
         
         }
 

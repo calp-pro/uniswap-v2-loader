@@ -15,9 +15,8 @@ describe('Uniswap V2', () => {
             fs.unlinkSync(uniswap_v2_cache_filename)
     })
     
-    it('Exist USDC/USDP pair', () => {
-        
-        return load({to: 2})
+    it('Exist USDC/USDP pair', () =>
+        load({to: 2})
         .then(pairs => {
             assert.equal(pairs.length, 2)
             const i = pairs.findIndex(({id}) => id == 1)
@@ -31,12 +30,8 @@ describe('Uniswap V2', () => {
                 assert.equal(token0, '0x8e870d67f660d95d5be530380d0ec0bd388289e1')
                 assert.equal(token1, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48')
             }
-            
-            fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
-            .forEach(line => console.log('*1', line))
         })
-    })
-    
+    )
     
     it('Re-load first two pairs to custom CSV file', () => {
         // If user specify a filename then
@@ -51,24 +46,18 @@ describe('Uniswap V2', () => {
         })
         .finally(() => {
             fs.unlinkSync(filename)
-            
-            fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
-            .forEach(line => console.log('*2', line))
         })
     })
 
-    it('subscribe should call provided callback with 2 pairs for a current moment (from cache)', () => {
-        return new Promise(y => {
+    it('subscribe should call provided callback with 2 pairs for a current moment (from cache)', () =>
+        new Promise(y => {
             const unsubscribe = subscribe(pairs => {
                 assert.equal(pairs.length, 2)
                 unsubscribe()
-
-                fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
-                .forEach(line => console.log('*3', line))
                 y()
             }, {to: 2})
         })
-    })
+    )
 
     it('Multi-core test 2 workers load 2 pools using multicall', () =>
         // There are already 2 pools loaded from previous test
@@ -77,16 +66,19 @@ describe('Uniswap V2', () => {
         load({to: 6, multicall_size: 2, workers: 2 })
         .then(pairs => {
             assert.equal(pairs.length, 6)
-            fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
-            .forEach(line => console.log('*4',line))
+        })
+    )
+    
+    it('No multi-core. Same process load +3 pairs', () =>
+        load({to: 6 + 3, workers: 0 })
+        .then(pairs => {
+            assert.equal(pairs.length, 9)
+            assert.equal(pairs[8].pair, '0xb6909b960dbbe7392d405429eb2b3649752b4838', 'Brave token BAT to WETH')
         })
     )
 
     it('Each line at CSV cache file should be orderd by pair id (factory id)', () => {
         const lines = fs.readFileSync(uniswap_v2_cache_filename, 'utf8').trim().split('\n')
-
-        lines.forEach(line => console.log('*5',line))
-        
         for (var i = 0; i < lines.length; i++)
             assert.equal(i, +lines[i].split(',').shift())
     })
