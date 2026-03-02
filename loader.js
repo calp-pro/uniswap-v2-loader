@@ -31,7 +31,7 @@ const get_pairs_addresses = (key, factory, ids) => ids.length == 0
             ? addresses
             : get_pairs_addresses(key, factory, failed_ids).then(retried => [...addresses, ...retried])
     })
-    .catch(() => get_pairs_addresses(key, factory, ids))
+    .catch(() => new Promise(resolve => setTimeout(() => resolve(get_pairs_addresses(key, factory, ids)), 1000)))
 
 const get_tokens = (key, addresses) => addresses.length == 0
     ? Promise.resolve({})
@@ -60,7 +60,7 @@ const get_tokens = (key, addresses) => addresses.length == 0
         _ => {
             throw 'fetch failed'
         }
-    }).then(responds => {
+    ).then(responds => {
         responds.sort((a, b) => a.id - b.id)
         const tokens = {}
         const failed_addresses = []
@@ -82,7 +82,7 @@ const get_tokens = (key, addresses) => addresses.length == 0
             ? tokens
             : get_tokens(key, failed_addresses).then(retried => ({ ...tokens, ...retried }))
     })
-    .catch(() => get_tokens(key, addresses))
+    .catch(() => new Promise(resolve => setTimeout(() => resolve(get_tokens(key, addresses)), 1000)))
 
 const main = ({ids, factory, key, multicall_size}, onpair) => {
     const chunks = []
