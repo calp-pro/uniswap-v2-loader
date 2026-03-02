@@ -80,4 +80,16 @@ describe('Uniswap V2', () => {
         for (var i = 0; i < lines.length; i++)
             assert.equal(i, +lines[i].split(',').shift())
     })
+    
+    it('Loading 9 pairs each pair should be call "progress" - 9 calls', () => {
+        var progress_call_count = 0
+        load({
+            to: 9,
+            workers: 0,
+            progress: () => progress_call_count++
+        })
+        .then(() => {
+            assert.equal(progress_call_count, 9)
+        })
+    })
 })
