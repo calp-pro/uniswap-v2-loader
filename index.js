@@ -37,7 +37,7 @@ const load = (params = {}) => {
             }, [])
         : []
 
-    if (to && pairs.length > to) return Promise.resolve(pairs.slice(0, to))
+    if (to && pairs.length >= to) return Promise.resolve(pairs.slice(0, to))
 
     return (to
         ? Promise.resolve(to)
