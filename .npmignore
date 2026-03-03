@@ -1,3 +1,5 @@
-CHANGELOG.md
 test.js
 *.csv
+test.js
+test.mjs
+lcov.info
