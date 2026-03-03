@@ -15,7 +15,7 @@ const get_pairs_addresses = (key, factory, ids) => ids.length == 0
             throw 'respond not ok'
         },
         _ => {
-            throw 'failed fetch'
+            throw _.cause?.message || 'failed fetch'
         }
     )    
     .then(responds => {
@@ -29,9 +29,11 @@ const get_pairs_addresses = (key, factory, ids) => ids.length == 0
 
         return failed_ids.length == 0
             ? addresses
-            : get_pairs_addresses(key, factory, failed_ids).then(retried => [...addresses, ...retried])
+            : new Promise(resolve => setTimeout(() => resolve(
+                get_pairs_addresses(key, factory, failed_ids).then(retried => [...addresses, ...retried])
+            ), 10000))
     })
-    .catch(() => new Promise(resolve => setTimeout(() => resolve(get_pairs_addresses(key, factory, ids)), 1000)))
+    .catch(() => new Promise(resolve => setTimeout(() => resolve(get_pairs_addresses(key, factory, ids)), 10000)))
 
 const get_tokens = (key, addresses) => addresses.length == 0
     ? Promise.resolve({})
@@ -58,7 +60,7 @@ const get_tokens = (key, addresses) => addresses.length == 0
             throw 'respond not ok'
         },
         _ => {
-            throw 'fetch failed'
+            throw _.cause?.message
         }
     ).then(responds => {
         responds.sort((a, b) => a.id - b.id)
@@ -80,9 +82,11 @@ const get_tokens = (key, addresses) => addresses.length == 0
 
         return failed_addresses.length == 0
             ? tokens
-            : get_tokens(key, failed_addresses).then(retried => ({ ...tokens, ...retried }))
+            : new Promise(resolve => setTimeout(() => resolve(
+                get_tokens(key, failed_addresses).then(retried => ({ ...tokens, ...retried }))
+            ), 10000))
     })
-    .catch(() => new Promise(resolve => setTimeout(() => resolve(get_tokens(key, addresses)), 1000)))
+    .catch(() => new Promise(resolve => setTimeout(() => resolve(get_tokens(key, addresses)), 10000)))
 
 const main = ({ids, factory, key, multicall_size}, onpair) => {
     const chunks = []
