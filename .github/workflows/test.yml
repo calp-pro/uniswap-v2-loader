@@ -8,7 +8,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
   id-token: write
 
 jobs:
@@ -23,7 +22,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '22'
-        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
 
     - name: Global install package CLI version
       run: npm i -g .
@@ -47,21 +46,8 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         file: lcov.info
 
-  publish:
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Publish if version changed
-        run: |
-          V=$(node -p "require('./package.json').version")
-          if ! npm view uniswap-v2-loader@$V version >/dev/null 2>&1; then
-            npm publish --provenance --access public
-          fi
+    - name: Publish
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: npm publish --provenance --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

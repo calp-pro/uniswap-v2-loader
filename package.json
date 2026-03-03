@@ -45,7 +45,6 @@
     "uniswap-v2-loader": "bin/uniswap-v2-loader"
   },
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
+    "provenance": true
   }
 }
