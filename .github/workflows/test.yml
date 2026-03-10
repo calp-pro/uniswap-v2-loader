@@ -32,7 +32,6 @@ jobs:
       run: npm install -g npm@latest
 
     - name: Global install package CLI version
-
       run: npm i -g .
 
     - name: Test CLI load first 4 pairs from Uniswap V2 using 2 workers

@@ -13,7 +13,7 @@
 | **ShibaSwap** | `0x115934131916c8b277dd010ee02de363c09d037c` |
 | **DefiSwap** | `0x9deb29c9a4c7a88a3c0257393b7f3335338d9a9d` |
 | **EtherVista** | `0x9a27cb5ae0b2cee0bb71f9a85c0d60f3920757b4` |
-| **Balancer V2** | `0xba12222222228d8ba445958a75a0704d566bf2c8` |
+| **RadioShack** | `0x91fae1bc94a9793708fbc66adcb59087c46dee10` |
 
 
 ## CLI
