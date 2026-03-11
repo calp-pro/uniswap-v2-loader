@@ -97,19 +97,17 @@ Standardized liquidity pool object.
 
 ## Usage Example
 ```javascript
-const { load, subscribe } = require('uniswap-v2-loader')
-const rl = require('readline')
+const { load } = require('uniswap-v2-loader')
 
+console.time('SushiSwap')
 
 load({ 
-  factory: '0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac  ', // SushiSwap
-  to: 1000, 
-  progress: (c, t) => {
-    rl.cursorTo(process.stdout, 0)
-    rl.clearLine(process.stdout, 0)
-    process.stdout.write(`Loaded: ${c} / ${t} (${(c/t*100).toFixed(2)}%)`)
-  }
+  factory: '0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac',
+  to: 100,
+  progress: (i, total, pair) =>
+    console.log(pair.token0, pair.token1)
 }).then(pairs => {
-  console.log(`\nSuccessfully loaded ${pairs.length} SushiSwap pairs`)
+  console.timeEnd('SushiSwap')
+  console.log(pairs.length, 'pairs')
 })
 ```
