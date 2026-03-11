@@ -37,7 +37,7 @@ High-performance parallel fetcher for liquidity pairs. Efficiently synchronizes 
 | `to` | `number` | End index (exclusive). Required for range loading. | `undefined` |
 | `filename` | `string` | Local CSV cache path. Supports OS-standard locations. | *Auto-detected* |
 | `factory` | `string` | Smart contract factory address. | `0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f` |
-| `key` | `string` | Alchemy/RPC API Key (priority over ENV). | `FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu` |
+| `key` | `string` | Alchemy API Key | `FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu` |
 | `multicall_size` | `number` | RPC batch size per multicall request. | `50` |
 | `workers` | `number` | Number of parallel worker threads. | `CPU - 1` |
 | `progress` | `function` | Progress callback: `(current, total) => {}`. | `undefined` |
@@ -97,19 +97,18 @@ Standardized liquidity pool object.
 
 ## Usage Example
 ```javascript
-const { load, subscribe } = require('uniswap-v2-loader')
-const rl = require('readline')
+const { load } = require('uniswap-v2-loader')
 
+console.time('SushiSwap')
 
 load({ 
-  factory: '0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac  ', // SushiSwap
-  to: 1000, 
-  progress: (c, t) => {
-    rl.cursorTo(process.stdout, 0)
-    rl.clearLine(process.stdout, 0)
-    process.stdout.write(`Loaded: ${c} / ${t} (${(c/t*100).toFixed(2)}%)`)
-  }
-}).then(pairs => {
-  console.log(`\nSuccessfully loaded ${pairs.length} SushiSwap pairs`)
+  factory: '0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac',
+  to: 100,
+  progress: (i, total, pair) =>
+    console.log(pair.token0, pair.token1)
+})
+.then(pairs => {
+  console.timeEnd('SushiSwap')
+  console.log(pairs.length, 'pairs')
 })
 ```
