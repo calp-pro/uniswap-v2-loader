@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const os = require('os')
 const home = os.homedir()
-const pkg = require('./package.json')
+const pkg = require('../package.json')
 
 module.exports = factory => path.join(
     ...(process.env.GITHUB_ACTIONS

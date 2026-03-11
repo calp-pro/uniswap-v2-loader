@@ -1,4 +1,4 @@
-import { load, subscribe } from './index.mjs'
+import { load, subscribe } from '../src/index.mjs'
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { load } = require('../index')
+const { load } = require('./index')
 const rl = require('readline')
 
 const options = [

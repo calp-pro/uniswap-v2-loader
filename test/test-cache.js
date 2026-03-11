@@ -1,8 +1,8 @@
 const fs = require('fs')
 const { describe, before, after, it } = require('node:test')
 const assert = require('node:assert/strict')
-const {load, subscribe} = require('./index')
-const default_cache_filename = require('./default_cache_filename')
+const {load, subscribe} = require('../src/index')
+const default_cache_filename = require('../src/default_cache_filename')
 const uniswap_v2_factory = '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f'
 
 describe('Cache OS filename at win32', () => {
