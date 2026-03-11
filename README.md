@@ -106,7 +106,8 @@ load({
   to: 100,
   progress: (i, total, pair) =>
     console.log(pair.token0, pair.token1)
-}).then(pairs => {
+})
+.then(pairs => {
   console.timeEnd('SushiSwap')
   console.log(pairs.length, 'pairs')
 })
