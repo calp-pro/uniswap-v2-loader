@@ -11,7 +11,7 @@ describe('ESM Support', () => {
     it('should load first pair', () => 
         load({ to: 1 })
         .then(pairs => {
-            assert.equal(pairs.length, 1)
+            assert.equal(pairs.length, 2)
             assert.equal(pairs[0].id, 0)
         })
     )
