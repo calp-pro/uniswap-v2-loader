@@ -39,12 +39,12 @@ const load = (params = {}) => {
             }, [])
         : []
 
-    if (to >= 0 && pairs.length >= to) {
+    if (to >= 0 && to <= pairs.length - 1) {
         if (progress)
-            for (var i = from; i < to; i++)
+            for (var i = from; i <= to; i++)
                 progress(pairs[i].id, to, pairs[i])
 
-        return Promise.resolve(pairs.slice(0, to))
+        return Promise.resolve(pairs.slice(from, to + 1))
     }
 
     return (to
@@ -61,17 +61,24 @@ const load = (params = {}) => {
             })
         }).then(
             _ => {
-                if (_.ok) return _.json().then(_ => Number(_.result))
+                if (_.ok) return _.json().then(_ => {
+                    const total_pools = Number(_.result)
+                    if (total_pools > 0) {
+                        const last_id = total_pools - 1
+                        return last_id
+                    }
+                    return 0
+                })
                 throw 'fail start'
             },
             _ => {
                 throw 'fetch failed'
             }
         )
-    ).then(all_pairs_length => {
+    ).then(last_id => {
         const start_loading_from = pairs.length
             ? Math.max(from, pairs[pairs.length - 1].id + 1)
-            : 0
+            : from
 
         var next_pair_order = pairs.length
             ? pairs[pairs.length - 1].id + 1
@@ -79,11 +86,11 @@ const load = (params = {}) => {
 
         if (progress)
             for (var i = from; i < start_loading_from; i++)
-                progress(pairs[i].id, all_pairs_length, pairs[i])
+                progress(pairs[i].id, last_id + 1, pairs[i])
         
         const onpair = pair => {
             pairs[pair.id] = pair
-            if (progress) progress(pair.id, all_pairs_length, pair)
+            if (progress && pair.id >= from) progress(pair.id, last_id + 1, pair)
             var _
             while (_ = pairs[next_pair_order]) {
                 fs.appendFileSync(filename, `${_.id},${_.pair},${_.token0},${_.token1}\n`)
@@ -93,15 +100,20 @@ const load = (params = {}) => {
 
         if (!workers) {
             const ids = []
-            for (var i = start_loading_from; i < all_pairs_length; i++)
+            for (var i = start_loading_from; i <= last_id; i++)
                 ids.push(i)
             return require('./loader')({ ids, factory, key, multicall_size, abort_signal }, onpair)
-            .then(() => pairs)
+            .then(() => {
+                if (from && to) return pairs.filter(({id}) => id >= from && id <= to)
+                if (from) return pairs.filter(({id}) => id >= from)
+                if (to) return pairs.filter(({id}) => id <= to)
+                return pairs
+            })
         }
 
         const missed = Array(workers).fill(null).map(() => [])
 
-        for (var i = start_loading_from, iw = 0; i < all_pairs_length; i++)
+        for (var i = start_loading_from, iw = 0; i <= last_id; i++)
             missed[iw++ % workers].push(i)
         
         cluster.setupPrimary({ exec: path.join(__dirname, 'loader.js') })
@@ -121,7 +133,12 @@ const load = (params = {}) => {
                     y()
                 })
             }))
-        ).then(() => pairs)
+        ).then(() => {
+            if (from && to) return pairs.filter(({id}) => id >= from && id <= to)
+            if (from) return pairs.filter(({id}) => id >= from)
+            if (to) return pairs.filter(({id}) => id <= to)
+            return pairs
+        })
     })
     .catch(() => abort_signal?.aborted ? pairs : new Promise(resolve => setTimeout(() => resolve(load(params)), 1000)))
 }
@@ -139,7 +156,7 @@ module.exports.subscribe = (callback, params = {}) => {
         const update = pairs =>
             timeout = setTimeout(
                 () =>
-                    load({...params, pairs, from: pairs.length})
+                    subscribed && load({...params, pairs, from: pairs.length})
                     .then(pairs => {
                         if (!subscribed) return
                         callback(pairs)
