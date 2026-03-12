@@ -60,11 +60,11 @@ Methods:
 
 `config` is an Object (key/value)
 - `from`
-  * Start loading from this pair index.
+  * Start index (inclusive).
   * Type: `number`
   * Default: `0`
 - `to`
-  * End index (exclusive). Required for range loading.
+  * End index (inclusive).
   * Type: `number`
   * Default: `undefined`
 - `filename`
