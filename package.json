@@ -48,8 +48,5 @@
   },
   "publishConfig": {
     "provenance": true
-  },
-  "dependencies": {
-    "@calp-pro/dex-db": "^2.0.0"
   }
 }
