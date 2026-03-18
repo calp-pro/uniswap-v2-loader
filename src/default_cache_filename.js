@@ -19,5 +19,5 @@ module.exports = factory => path.join(
                         ? [home, '.cache']
                         : [os.tmpdir()]
     ),
-    `${pkg.name}_${factory.toLowerCase()}.csv`
+    `${pkg.name}_${factory.toLowerCase()}`
 )

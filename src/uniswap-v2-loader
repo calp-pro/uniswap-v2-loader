@@ -6,6 +6,7 @@ const options = [
     'key',
     'factory',
     'filename',
+    'csv',
     'multicall_size',
     'from',
     'to',
@@ -57,8 +58,26 @@ while (arg = process.argv[i]) {
 			process.exit(22)
 		}
 	}
+    if (option == 'csv') {
+        if (value != 'true' && value != 'false') {
+            console.log(`"csv" should be a "true" or "false". Default is "true".`)
+			process.exit(22)
+		}
+        value = value == 'true'
+	}
     params[option] = value
     i++
+}
+
+if (params.csv != undefined && params.filename) {
+    if (params.csv == true && !params.filename.endsWith('.csv')) {
+        console.log(`CSV cache mode require "filename" ending with ".csv"`)
+        process.exit(22)
+    }
+    if (params.csv == false && params.filename.endsWith('.csv')) {
+        console.log(`Binary cache mode require "filename" ending without ".csv"`)
+        process.exit(22)
+    }
 }
 
 params.progress = params.filename
