@@ -22,6 +22,8 @@ export interface load_params {
   factory?: string
   /** Path to the cache file. Set to null to disable caching. */
   filename?: string | null
+  /** Switch cache between CSV and binary mode. */
+  csv?: boolean
   /** Number of pairs to fetch in a single multicall. */
   multicall_size?: number
   /** Start loading from this index. */
