@@ -3,6 +3,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const default_cache_filename = require('./default_cache_filename')
+const dex_db = require('./dex_db')
 const max_workers = os.cpus().length - 1
 const debug_key = process.env.KEY || 'FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu'
 const uniswap_v2_factory = '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f'
@@ -12,6 +13,7 @@ const load = (params = {}) => {
         key = debug_key,
         factory = uniswap_v2_factory,
         filename,
+        csv = true,
         multicall_size = 50,
         from = 0,
         to,
@@ -21,23 +23,51 @@ const load = (params = {}) => {
         pairs,
     } = params
 
-    filename ??= default_cache_filename(factory)
+    if (!filename) {
+        filename = default_cache_filename(factory)
+        if (csv) filename += '.csv'
+    }
     workers = Math.min(workers, max_workers)
-
-    pairs ??= fs.existsSync(filename)
-        ? fs.readFileSync(filename).toString().trim().split('\n')
-            .reduce((pairs, line) => {
-                line = line.split(',')
-                const id = +line[0]
-                if (id >= from && (to == undefined || id <= to)) pairs.push({
-                    id,
-                    pair: line[1],
-                    token0: line[2],
-                    token1: line[3]
+    
+    var db
+    
+    if (!pairs) {
+        if (csv) {
+            pairs = fs.existsSync(filename)
+                ? fs.readFileSync(filename).toString().trim().split('\n')
+                    .reduce((pairs, line) => {
+                        line = line.split(',')
+                        const id = +line[0]
+                        if (id >= from && (to == undefined || id <= to)) pairs.push({
+                            id,
+                            pair: line[1],
+                            token0: line[2],
+                            token1: line[3]
+                        })
+                        return pairs
+                    }, [])
+                : []
+        } else {
+            pairs = []
+            db = dex_db()
+            if (
+                fs.existsSync(filename + '_pairs.bin') &&
+                fs.existsSync(filename + '_tokens.bin') &&
+                fs.existsSync(filename + '_p2tt.bin')
+            ) {
+                db.load(filename)
+                db.get_all_pairs().forEach((pair, i) => {
+                    const tokens = db.get_tokens(pair)
+                    pairs[i] = {
+                        id: i,
+                        pair,
+                        token0: tokens[0],
+                        token1: tokens[1]
+                    }
                 })
-                return pairs
-            }, [])
-        : []
+            }
+        }
+    }
 
     if (to >= 0 && to <= pairs.length - 1) {
         if (progress)
@@ -88,15 +118,25 @@ const load = (params = {}) => {
             for (var i = from; i < start_loading_from; i++)
                 progress(pairs[i].id, last_id + 1, pairs[i])
         
-        const onpair = pair => {
-            pairs[pair.id] = pair
-            if (progress && pair.id >= from) progress(pair.id, last_id + 1, pair)
-            var _
-            while (_ = pairs[next_pair_order]) {
-                fs.appendFileSync(filename, `${_.id},${_.pair},${_.token0},${_.token1}\n`)
-                next_pair_order++
+        const onpair = csv
+            ? pair => {
+                pairs[pair.id] = pair
+                if (progress && pair.id >= from) progress(pair.id, last_id + 1, pair)
+                var _
+                while (_ = pairs[next_pair_order]) {
+                    fs.appendFileSync(filename, `${_.id},${_.pair},${_.token0},${_.token1}\n`)
+                    next_pair_order++
+                }
             }
-        }
+            : pair => {
+                pairs[pair.id] = pair
+                if (progress && pair.id >= from) progress(pair.id, last_id + 1, pair)
+                var _
+                while (_ = pairs[next_pair_order]) {
+                    db.index_save([_.pair, _.token0, _.token1], filename)
+                    next_pair_order++
+                }
+            }
 
         if (!workers) {
             const ids = []
