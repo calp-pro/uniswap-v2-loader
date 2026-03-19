@@ -3,7 +3,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const default_cache_filename = require('./default_cache_filename')
-const dex_db = require('./dex_db')
+const dex_db = require('@calp-pro/dex-db')
 const max_workers = os.cpus().length - 1
 const debug_key = process.env.KEY || 'FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu'
 const uniswap_v2_factory = '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f'
@@ -57,7 +57,7 @@ const load = (params = {}) => {
             ) {
                 db.load(filename)
                 db.get_all_pairs().forEach((pair, i) => {
-                    const tokens = db.get_tokens(pair)
+                    const tokens = db.get_pair_tokens(pair)
                     pairs[i] = {
                         id: i,
                         pair,
