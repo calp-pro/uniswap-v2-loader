@@ -57,7 +57,7 @@ const load = (params = {}) => {
             ) {
                 db.load(filename)
                 db.get_all_pairs().forEach((pair, i) => {
-                    const tokens = db.get_tokens(pair)
+                    const tokens = db.get_pair_tokens(pair)
                     pairs[i] = {
                         id: i,
                         pair,
