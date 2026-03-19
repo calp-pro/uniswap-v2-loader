@@ -31,6 +31,9 @@ jobs:
     - name: Update npm
       run: npm install -g npm@latest
 
+    - name: Install dependencies
+      run: npm i
+
     - name: Global install package CLI version
       run: npm i -g .
 
