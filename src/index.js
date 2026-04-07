@@ -5,7 +5,7 @@ const path = require('path')
 const default_cache_filename = require('./default_cache_filename')
 const dex_db = require('@calp-pro/dex-db')
 const max_workers = os.cpus().length - 1
-const debug_key = process.env.KEY || 'FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu'
+const debug_key = process.env.KEY || 'euEV_WdPWxmaSWLlGyKr9'
 const uniswap_v2_factory = '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f'
 
 const load = (params = {}) => {
