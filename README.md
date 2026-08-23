@@ -82,10 +82,10 @@ Methods:
   * Smart contract factory address.
   * Type: `string`
   * Default: `0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f`
-- `key`
-  * Alchemy API Key
-  * Type: `string`
-  *  Default: `FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu`
+- `RPC_URL`
+  * Remote Procedure Call URL
+  * Type: `string|function`
+  * Default: getter URL function between 3 demo URLs
 - `multicall_size`
   * RPC batch size per multicall request.
   * Type:`number`
@@ -101,7 +101,7 @@ Methods:
     - `total` total amount of pairs at fabric at current moment
     - `pair` instance of `Pair`(`{id: number, pair: string, token0: string, token1: string}`)
   * Type: `function`
-  * Default: `undefined`
+  * Default: `(id, total, pair) => null`
 - `abort_signal`
   * Signal to cancel loading and release workers.
   * Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)

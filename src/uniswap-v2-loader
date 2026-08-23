@@ -3,7 +3,7 @@ const { load } = require('./index')
 const rl = require('readline')
 
 const options = [
-    'key',
+    'RPC_URL',
     'factory',
     'filename',
     'csv',

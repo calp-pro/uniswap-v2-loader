@@ -17,7 +17,7 @@ export interface pair {
  */
 export interface load_params {
   /** Alchemy/Infura API key. */
-  key?: string
+  RPC_URL?: string | () => void
   /** The address of a Uniswap V2-compatible factory (e.g., Uniswap, PancakeSwap, SushiSwap). */
   factory?: string
   /** Path to the cache file. Set to null to disable caching. */

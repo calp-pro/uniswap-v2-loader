@@ -5,19 +5,29 @@ const path = require('path')
 const default_cache_filename = require('./default_cache_filename')
 const dex_db = require('@calp-pro/dex-db')
 const max_workers = os.cpus().length - 1
-const debug_key = process.env.KEY || 'euEV_WdPWxmaSWLlGyKr9'
 const uniswap_v2_factory = '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f'
 
+var current_RPC = 0
+const debug_RPC_URLs = [
+    'https://eth-mainnet.g.alchemy.com/v2/euEV_WdPWxmaSWLlGyKr9',
+    'https://eth-mainnet.g.alchemy.com/v2/FZBvlPrOxtgaKBBkry3SH0W1IqH4Y5tu',
+    'https://rpc.ankr.com/eth/01a663e5b3b0248ad7103988721439169684eb4b320834036e9f0660660bcfe4'
+]
+const get_RPC_URL = () => {
+    const url = debug_RPC_URLs[current_RPC]
+    current_RPC = (current_RPC + 1) % debug_RPC_URLs.length
+    return url
+}
 const load = (params = {}) => {
     var {
-        key = debug_key,
+        RPC_URL = get_RPC_URL,
         factory = uniswap_v2_factory,
         filename,
         csv = true,
         multicall_size = 50,
         from = 0,
         to,
-        progress,
+        progress = (id, total, pair) => null,
         abort_signal,
         workers = max_workers,
         pairs,
@@ -79,7 +89,7 @@ const load = (params = {}) => {
 
     return (to
         ? Promise.resolve(to)
-        : fetch('https://eth-mainnet.g.alchemy.com/v2/' + key, {
+        : fetch(typeof RPC_URL == 'function' ? RPC_URL() : RPC_URL, {
             signal: abort_signal,
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -142,7 +152,7 @@ const load = (params = {}) => {
             const ids = []
             for (var i = start_loading_from; i <= last_id; i++)
                 ids.push(i)
-            return require('./loader')({ ids, factory, key, multicall_size, abort_signal }, onpair)
+            return require('./loader')({ ids, factory, RPC_URL, multicall_size, abort_signal }, onpair)
             .then(() => {
                 if (from && to) return pairs.filter(({id}) => id >= from && id <= to)
                 if (from) return pairs.filter(({id}) => id >= from)
@@ -166,7 +176,7 @@ const load = (params = {}) => {
                 const w = cluster.fork()
                 const onabort = () => w.send('abort')
                 abort_signal?.addEventListener('abort', onabort, { once: true })
-                w.send({ ids, factory, key, multicall_size })
+                w.send({ ids, factory, RPC_URL: debug_RPC_URLs[i % debug_RPC_URLs.length], multicall_size })
                 w.on('message', onpair)
                 w.on('exit', () => {
                     abort_signal?.removeEventListener('abort', onabort)
